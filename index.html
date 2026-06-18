@@ -1,12 +1,11 @@
 
             
-                                                                        
-                                        <!DOCTYPE html>
+                                                 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Cricket Franchise Manager</title>
+    <title>Pro Cricket Franchise Manager - Tactical Edition</title>
     <style>
         :root {
             --primary: #0f172a;
@@ -15,6 +14,7 @@
             --dark: #1e293b;
             --light: #f8fafc;
             --border: #cbd5e1;
+            --danger: #ef4444;
         }
 
         body {
@@ -30,7 +30,6 @@
             color: white;
             padding: 1.5rem;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .container {
@@ -137,8 +136,23 @@
 
         .btn:hover { background-color: #1d4ed8; }
         .btn-success { background-color: var(--accent); }
+        .btn-danger { background-color: var(--danger); }
+        .btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
 
-        /* Match interface layout */
+        .tactics-zone {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
         .match-layout {
             display: grid;
             grid-template-columns: 1.2fr 0.8fr;
@@ -166,60 +180,58 @@
             font-family: monospace;
             padding: 1rem;
             border-radius: 6px;
-            height: 300px;
+            height: 350px;
             overflow-y: auto;
         }
 
         .user-row { background-color: #eff6ff; font-weight: bold; }
+        .flex-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .flex-item { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>🏆 Pro Cricket Franchise League</h1>
-        <p id="sub-header">Climb from Division 6 to World Super League Glory</p>
+        <h1>🏆 Pro Cricket Franchise Manager</h1>
+        <p>Realistic Linguistic Engines • Tactical Selection • Ball-by-Ball Sim</p>
     </header>
 
     <div class="container">
+        <!-- SCREEN 1: Franchise Name Setup -->
         <div id="setup-screen" class="setup-screen">
             <h2>Establish Your Franchise</h2>
-            <p>You will start at the bottom tier (Division 6) with a squad of raw, low-attribute prospects (Attributes: 30-50).</p>
+            <p>You will start in Division 6 with a pool of 15 players (Attributes: 30-50). You must select your Playing XI and tactics for every match.</p>
             <label for="team-name-input">Enter Team Name:</label>
-            <input type="text" id="team-name-input" value="Mumbai Monarchs" placeholder="e.g. London Knights">
+            <input type="text" id="team-name-input" value="Mumbai Monarchs">
             <button class="btn" onclick="initializeGame()">Found Club</button>
         </div>
 
+        <!-- MAIN GAME PANEL -->
         <div id="main-game" style="display: none;">
             <div class="hud">
                 <div class="hud-card"><span>Club:</span> <span id="hud-name">--</span></div>
                 <div class="hud-card"><span>Division:</span> <span id="hud-div" style="color:var(--secondary)">--</span></div>
-                <div class="hud-card"><span>Funds:</span> <span id="hud-cash" style="color:var(--accent)">$200,000</span></div>
-                <div class="hud-card"><span>League Schedule:</span> <span id="hud-round">Round 1/7</span></div>
+                <div class="hud-card"><span>Funds:</span> <span id="hud-cash" style="color:var(--accent)">--</span></div>
+                <div class="hud-card"><span>League Schedule:</span> <span id="hud-round">--</span></div>
             </div>
 
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('standings')">Standings & Schedule</button>
-                <button class="tab-btn" onclick="switchTab('roster')">Squad Management</button>
+                <button class="tab-btn" onclick="switchTab('roster')">Team Selection (XI)</button>
                 <button class="tab-btn" onclick="switchTab('matchday')">Match Center</button>
             </div>
 
+            <!-- TAB 1: Standings -->
             <div id="panel-standings" class="panel active">
                 <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem;">
                     <div>
                         <h3>Current Division Points Table</h3>
                         <table>
                             <thead>
-                                <tr>
-                                    <th>Team</th>
-                                    <th>P</th>
-                                    <th>W</th>
-                                    <th>L</th>
-                                    <th>Pts</th>
-                                </tr>
+                                <tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr>
                             </thead>
                             <tbody id="table-body"></tbody>
                         </table>
-                        <p style="font-size: 0.85rem; color:#64748b; margin-top:0.5rem;">ℹ️ Top team at the end of Round 7 earns instant promotion.</p>
                     </div>
                     <div>
                         <h3>Division Fixtures</h3>
@@ -228,39 +240,79 @@
                 </div>
             </div>
 
+            <!-- TAB 2: Roster / Selection Panel -->
             <div id="panel-roster" class="panel">
-                <h3>Active Team Roster (Base Rating Bracket: 30 - 50)</h3>
-                <table>
-                    <thead>
-                        <tr><th>Player</th><th>Role</th><th>Batting Skill</th><th>Bowling Skill</th></tr>
-                    </thead>
-                    <tbody id="roster-body"></tbody>
-                </table>
+                <h3>Matchday Selection & Strategy Room</h3>
+                <p>Add or drop players to form your **Playing XI**. The list position indicates your active Batting Order sequence.</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div>
+                        <h4>Available Squad Pool (15 Players)</h4>
+                        <div id="pool-list" class="flex-list"></div>
+                    </div>
+                    <div>
+                        <h4>Selected Playing XI (Exactly 11 Needed)</h4>
+                        <div id="xi-list" class="flex-list" style="border-left: 2px dashed var(--border); padding-left: 1rem;"></div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <label for="bowler-select"><strong>Set Opening/Primary Bowler:</strong></label>
+                            <select id="bowler-select" style="width:100%; padding:0.5rem; margin-top:0.5rem;"></select>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <!-- TAB 3: Match Day -->
             <div id="panel-matchday" class="panel">
+                <!-- Tactical Decisions HUD during Live Ball -->
+                <div class="tactics-zone" id="tactics-panel" style="display: none;">
+                    <h4 style="margin:0 0 0.5rem 0;" id="tactics-title">Tactical Instruction Panel</h4>
+                    
+                    <!-- Batting Choices -->
+                    <div id="batting-tactics">
+                        <span style="font-size:0.9rem; color:#475569;">Set your strategy for the upcoming delivery:</span>
+                        <div class="radio-group">
+                            <label><input type="radio" name="bat-agg" value="defensive"> Defence (Low risk)</label>
+                            <label><input type="radio" name="bat-agg" value="stroke" checked> Stroke Play (Balanced)</label>
+                            <label><input type="radio" name="bat-agg" value="aggressive"> Aggressive (High risk)</label>
+                        </div>
+                    </div>
+
+                    <!-- Bowling Choices -->
+                    <div id="bowling-tactics" style="display: none;">
+                        <span style="font-size:0.9rem; color:#475569;">Adjust your field positioning arrays:</span>
+                        <div class="radio-group">
+                            <label><input type="radio" name="bowl-field" value="defensive"> Defensive Field</label>
+                            <label><input type="radio" name="bowl-field" value="neutral" checked> Neutral Balance</label>
+                            <label><input type="radio" name="bowl-field" value="attacking"> Attacking Field</label>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success" style="margin-top: 1rem; width:100%;" onclick="simulateNextBall()">Deliver/Play Next Ball 🏏</button>
+                </div>
+
                 <div class="match-layout">
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3 id="matchday-vs-heading">Next Up: Match Day Simulation</h3>
-                            <button class="btn btn-success" id="sim-match-btn" onclick="runLiveMatch()">Simulate Round</button>
+                            <h3 id="matchday-vs-heading">Match Day Setup</h3>
+                            <button class="btn btn-success" id="sim-match-btn" onclick="startTacticalMatch()">Begin Ball-by-Ball Match</button>
                         </div>
                         
                         <div class="scorecard-subgrid">
                             <div style="background: #f8fafc; padding: 1rem; border-radius: 6px; border: 1px solid #e2e8f0;">
-                                <h4 id="score-team1-name">Your Team</h4>
-                                <div id="batting-scorecard"></div>
+                                <h4 id="score-team1-name">Your Lineup Stats</h4>
+                                <div id="batting-scorecard">Select Lineup and Tap Begin</div>
                             </div>
                             <div style="background: #f8fafc; padding: 1rem; border-radius: 6px; border: 1px solid #e2e8f0;">
-                                <h4 id="score-team2-name">Opponent Team</h4>
-                                <div id="bowling-scorecard"></div>
+                                <h4 id="score-team2-name">Opponent Lineup</h4>
+                                <div id="bowling-scorecard">-</div>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <h3>Live Match Log</h3>
-                        <div id="commentary-box">Awaiting coin toss...</div>
+                        <h3>Live Feed Commentary</h3>
+                        <div id="commentary-box">Awaiting match tactical commands...</div>
                     </div>
                 </div>
             </div>
@@ -268,132 +320,166 @@
     </div>
 
     <script>
-        // --- DATA STRUCTURES ---
         let game = {
-            userTeam: "",
-            currentDivision: 6,
-            cash: 200000,
-            currentRound: 1,
-            teams: [],
-            standings: {},
-            schedule: [],
-            roster: [],
-            opponentsRosters: {}
+            userTeam: "", currentDivision: 6, cash: 200000, currentRound: 1,
+            teams: [], standings: {}, schedule: [],
+            squadPool: [], playingXI: [], primaryBowlerIdx: 0
         };
 
-        const baseFirstNames = ["Rohan", "Liam", "Zain", "Vikram", "Carlos", "David", "Aarav", "Kofi"];
-        const baseLastNames = ["Sharma", "Smith", "Khan", "Patel", "Brathwaite", "Warner", "Nair", "Moyo"];
+        let simEngine = {
+            active: false, currentInnings: 1, ballsSimulated: 0, runs: 0, wickets: 0,
+            currentBatsmanIdx: 0, oppTarget: 0, oppRuns: 0, oppWickets: 0, opponentName: "",
+            batsmanRunsTracker: Array(11).fill(0)
+        };
 
-        // --- ENGINE SETUP INITIALIZATION ---
+        // --- REALISTIC REGIONAL NAMING ENGINE ---
+        // Cultural groupings prevent immersion-breaking mixups like David Ali or Irfan Kartik
+        const culturalNamingGroups = [
+            {
+                firstNames: ["David", "John", "Robert", "James", "Michael", "William", "Tom", "Ben", "Chris", "Luke"],
+                lastNames: ["Johnson", "Smith", "Warner", "Root", "Stokes", "Anderson", "Taylor", "Brown", "Miller", "Clark"]
+            },
+            {
+                firstNames: ["Irfan", "Zain", "Javed", "Imran", "Asif", "Malik", "Rizwan", "Babur", "Shadab", "Faheem"],
+                lastNames: ["Ali", "Khan", "Ahmed", "Afridi", "Shah", "Akram", "Anwar", "Bukhari", "Hussain", "Mahmood"]
+            },
+            {
+                firstNames: ["Manoj", "Rohan", "Vikram", "Aarav", "Kartik", "Suresh", "Rahul", "Amit", "Deepak", "Sanjay"],
+                lastNames: ["Kartik", "Sharma", "Patel", "Nair", "Mishra", "Joshi", "Verma", "Kumar", "Gupta", "Iyer"]
+            }
+        ];
+
+        function generateRealisticPlayerName() {
+            // Select a single cohesive cultural matrix pool first
+            let chosenPool = culturalNamingGroups[Math.floor(Math.random() * culturalNamingGroups.length)];
+            let firstName = chosenPool.firstNames[Math.floor(Math.random() * chosenPool.firstNames.length)];
+            let lastName = chosenPool.lastNames[Math.floor(Math.random() * chosenPool.lastNames.length)];
+            return `${firstName} ${lastName}`;
+        }
+
         function initializeGame() {
             const nameInput = document.getElementById('team-name-input').value.trim();
-            if(!nameInput) return alert("Please enter a valid team name.");
+            if(!nameInput) return alert("Please type a valid franchise name.");
             
             game.userTeam = nameInput;
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('main-game').style.display = 'block';
 
+            generateInitial15PlayerPool();
             generateDivisionInfrastructure();
-            generateUserRoster();
             buildRoundRobinSchedule();
             renderAll();
         }
 
-        function generateUserRoster() {
-            game.roster = [];
-            for(let i=0; i<11; i++) {
-                let isBowler = i >= 6;
-                game.roster.push({
-                    name: `${baseFirstNames[Math.floor(Math.random()*8)]} ${baseLastNames[Math.floor(Math.random()*8)]}`,
+        function generateInitial15PlayerPool() {
+            game.squadPool = [];
+            for(let i=0; i<15; i++) {
+                let isBowler = i >= 8;
+                game.squadPool.push({
+                    id: i,
+                    name: generateRealisticPlayerName(),
                     role: isBowler ? "Bowler" : "Batsman",
-                    // As per prompt rule: attributes strictly clamped between 30 and 50
                     batting: isBowler ? Math.floor(Math.random()*15)+15 : Math.floor(Math.random()*21)+30,
                     bowling: isBowler ? Math.floor(Math.random()*21)+30 : Math.floor(Math.random()*15)+15
                 });
             }
+            game.playingXI = game.squadPool.slice(0, 11);
         }
 
         function generateDivisionInfrastructure() {
-            // Generate 7 computer rivals + User Team = 8 Teams total per division rule
             game.teams = [game.userTeam, "Skyline Titans", "Glow Mavericks", "Valley Hydras", "Coastal Anchors", "Apex Blasters", "Desert Cobras", "Oasis Kings"];
-            
             game.standings = {};
-            game.teams.forEach(t => {
-                game.standings[t] = { played: 0, won: 0, lost: 0, points: 0 };
-            });
+            game.teams.forEach(t => game.standings[t] = { played: 0, won: 0, lost: 0, points: 0 });
         }
 
         function buildRoundRobinSchedule() {
             game.schedule = [];
             let tempTeams = [...game.teams];
             let numTeams = tempTeams.length;
-            
-            // Simple Round Robin Circle Method algorithm to create 7 structural loops
             for (let round = 1; round < numTeams; round++) {
                 let roundMatches = [];
                 for (let i = 0; i < numTeams / 2; i++) {
-                    let home = tempTeams[i];
-                    let away = tempTeams[numTeams - 1 - i];
-                    roundMatches.push({ home: home, away: away, simulated: false, userInvolved: (home === game.userTeam || away === game.userTeam) });
+                    roundMatches.push({ home: tempTeams[i], away: tempTeams[numTeams - 1 - i], simulated: false, userInvolved: (tempTeams[i] === game.userTeam || tempTeams[numTeams - 1 - i] === game.userTeam) });
                 }
                 game.schedule.push({ roundNum: round, matches: roundMatches });
-                // Rotate array elements
                 tempTeams.splice(1, 0, tempTeams.pop());
             }
         }
 
-        // --- RENDER COMPILERS ---
+        function toggleSelection(playerId) {
+            if(simEngine.active) return;
+            let poolIndex = game.squadPool.findIndex(p => p.id === playerId);
+            let xiIndex = game.playingXI.findIndex(p => p.id === playerId);
+
+            if (xiIndex > -1) {
+                game.playingXI.splice(xiIndex, 1);
+            } else {
+                if(game.playingXI.length >= 11) {
+                    alert("Your Playing XI lineup is full! Drop a player first.");
+                    return;
+                }
+                game.playingXI.push(game.squadPool[poolIndex]);
+            }
+            renderRosterSelectionInterfaces();
+            renderAll();
+        }
+
+        function renderRosterSelectionInterfaces() {
+            const poolList = document.getElementById('pool-list');
+            const xiList = document.getElementById('xi-list');
+            const bowlerSelect = document.getElementById('bowler-select');
+
+            poolList.innerHTML = '';
+            xiList.innerHTML = '';
+            bowlerSelect.innerHTML = '';
+
+            game.squadPool.forEach(p => {
+                let inXI = game.playingXI.some(xi => xi.id === p.id);
+                let template = `<div class="flex-item">
+                    <span><b>${p.name}</b> (${p.role}) <br><small>Bat: ${p.batting} | Bowl: ${p.bowling}</small></span>
+                    <button class="btn ${inXI ? 'btn-danger' : 'btn-success'}" onclick="toggleSelection(${p.id})">${inXI ? 'Drop' : 'Select'}</button>
+                </div>`;
+                
+                if (inXI) {
+                    xiList.innerHTML += template;
+                } else {
+                    poolList.innerHTML += template;
+                }
+            });
+
+            game.playingXI.forEach((p, idx) => {
+                bowlerSelect.innerHTML += `<option value="${idx}">Order Position ${idx+1}: ${p.name} (${p.role})</option>`;
+            });
+        }
+
         function renderAll() {
             document.getElementById('hud-name').innerText = game.userTeam;
             document.getElementById('hud-div').innerText = `Division ${game.currentDivision}`;
             document.getElementById('hud-cash').innerText = `$${game.cash.toLocaleString()}`;
-            document.getElementById('hud-round').innerText = game.currentRound <= 7 ? `Round ${game.currentRound}/7` : "Season Concluded";
+            document.getElementById('hud-round').innerText = game.currentRound <= 7 ? `Round ${game.currentRound}/7` : "Season Finished";
 
-            // Render Standings
-            const sortedTeams = Object.keys(game.standings).sort((a,b) => game.standings[b].points - game.standings[a].points || game.standings[b].won - game.standings[a].won);
+            const sortedTeams = Object.keys(game.standings).sort((a,b) => game.standings[b].points - game.standings[a].points);
             const tableBody = document.getElementById('table-body');
             tableBody.innerHTML = '';
             sortedTeams.forEach(t => {
-                let rowClass = (t === game.userTeam) ? "user-row" : "";
-                tableBody.innerHTML += `
-                    <tr class="${rowClass}">
-                        <td>${t}</td>
-                        <td>${game.standings[t].played}</td>
-                        <td>${game.standings[t].won}</td>
-                        <td>${game.standings[t].lost}</td>
-                        <td style="color:var(--secondary)"><b>${game.standings[t].points}</b></td>
-                    </tr>
-                `;
+                tableBody.innerHTML += `<tr class="${t === game.userTeam ? 'user-row' : ''}">
+                    <td>${t}</td><td>${game.standings[t].played}</td><td>${game.standings[t].won}</td><td>${game.standings[t].lost}</td><td><b>${game.standings[t].points}</b></td>
+                </tr>`;
             });
 
-            // Render Fixtures list
             const schedList = document.getElementById('schedule-list');
             schedList.innerHTML = '';
             game.schedule.forEach(r => {
-                schedList.innerHTML += `<div style="background:#f1f5f9; padding:4px 8px; margin:8px 0; border-radius:4px; font-weight:bold;">Round ${r.roundNum}</div>`;
+                schedList.innerHTML += `<div style="background:#f1f5f9; padding:4px; font-weight:bold; font-size:0.85rem;">Round ${r.roundNum}</div>`;
                 r.matches.forEach(m => {
-                    let style = m.userInvolved ? "font-weight:bold; color:var(--secondary);" : "color:#64748b;";
-                    let status = m.simulated ? "✅" : "⏳";
-                    schedList.innerHTML += `<div style="padding:4px; font-size:0.85rem; ${style}">${status} ${m.home} vs ${m.away}</div>`;
+                    schedList.innerHTML += `<div style="padding:2px 6px; font-size:0.8rem; ${m.userInvolved ? 'color:var(--secondary); font-weight:bold;' : 'color:#64748b;'}">${m.simulated ? '✅' : '⏳'} ${m.home} vs ${m.away}</div>`;
                 });
             });
 
-            // Render Roster view
-            const rosterBody = document.getElementById('roster-body');
-            rosterBody.innerHTML = '';
-            game.roster.forEach(p => {
-                rosterBody.innerHTML += `<tr><td><b>${p.name}</b></td><td>${p.role}</td><td>${p.batting}</td><td>${p.bowling}</td></tr>`;
-            });
-
-            // Dynamic Next Opponent Check
-            if(game.currentRound <= 7) {
+            if(game.currentRound <= 7 && !simEngine.active) {
                 let nextMatch = game.schedule[game.currentRound-1].matches.find(m => m.userInvolved);
-                let opp = (nextMatch.home === game.userTeam) ? nextMatch.away : nextMatch.home;
-                document.getElementById('matchday-vs-heading').innerText = `Round ${game.currentRound}: vs ${opp}`;
-            } else {
-                document.getElementById('matchday-vs-heading').innerText = "Season Finished! Check Standings.";
-                document.getElementById('sim-match-btn').innerText = "Check Promotion/Next Season";
-                document.getElementById('sim-match-btn').onclick = processSeasonEnd;
+                simEngine.opponentName = (nextMatch.home === game.userTeam) ? nextMatch.away : nextMatch.home;
+                document.getElementById('matchday-vs-heading').innerText = `Round ${game.currentRound}: vs ${simEngine.opponentName}`;
             }
         }
 
@@ -402,137 +488,195 @@
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById(`panel-${panelId}`).classList.add('active');
+            if(panelId === 'roster') renderRosterSelectionInterfaces();
         }
 
-        // --- MATH MATCH ENGINE COMPONENT ---
-        function runLiveMatch() {
-            if(game.currentRound > 7) return;
-            document.getElementById('sim-match-btn').disabled = true;
-
-            let currentRoundData = game.schedule[game.currentRound - 1];
-            let userMatch = currentRoundData.matches.find(m => m.userInvolved);
-            let opponentName = (userMatch.home === game.userTeam) ? userMatch.away : userMatch.home;
-
-            document.getElementById('score-team1-name').innerText = game.userTeam;
-            document.getElementById('score-team2-name').innerText = opponentName;
-
-            let batScore = document.getElementById('batting-scorecard');
-            let bowlScore = document.getElementById('bowling-scorecard');
-            let commBox = document.getElementById('commentary-box');
-
-            batScore.innerHTML = '';
-            bowlScore.innerHTML = '';
-            commBox.innerHTML = "<b>Starting coin toss... Your franchise elects to bat first.</b><br><br>";
-
-            let userRuns = 0;
-            let currentBatsmanIdx = 0;
+        // --- INTERACTIVE ENGINE DEPLOYMENT ---
+        function startTacticalMatch() {
+            if (game.playingXI.length !== 11) {
+                alert("Tactical Error: You must pick exactly 11 players in your squad panel before starting matches.");
+                return;
+            }
             
-            // Build dynamic text nodes for player list
-            game.roster.forEach((p, idx) => {
-                batScore.innerHTML += `<div class="player-line" id="p-bat-${idx}"><span>${p.name}</span><span id="p-score-${idx}">0</span></div>`;
+            simEngine.active = true;
+            simEngine.currentInnings = 1;
+            simEngine.ballsSimulated = 0;
+            simEngine.runs = 0;
+            simEngine.wickets = 0;
+            simEngine.currentBatsmanIdx = 0;
+            simEngine.oppRuns = 0;
+            simEngine.oppWickets = 0;
+            simEngine.batsmanRunsTracker = Array(11).fill(0);
+            game.primaryBowlerIdx = parseInt(document.getElementById('bowler-select').value) || 0;
+
+            document.getElementById('sim-match-btn').style.display = 'none';
+            document.getElementById('tactics-panel').style.display = 'block';
+
+            document.getElementById('score-team1-name').innerText = `${game.userTeam} (Batting Order)`;
+            document.getElementById('score-team2-name').innerText = `${simEngine.opponentName} (Chasing)`;
+
+            buildLiveScorecardView();
+            
+            let comm = document.getElementById('commentary-box');
+            comm.innerHTML = `<b>Welcome to the arena. Coin flipped... ${game.userTeam} are batting first!</b><br>Setup tactics for ball 0.1 below.<br><br>`;
+            toggleTacticsUIPanels();
+        }
+
+        function toggleTacticsUIPanels() {
+            if(simEngine.currentInnings === 1) {
+                document.getElementById('batting-tactics').style.display = 'block';
+                document.getElementById('bowling-tactics').style.display = 'none';
+                document.getElementById('tactics-title').innerText = `Delivery Strategy: Ball ${Math.floor(simEngine.ballsSimulated/6)}.${(simEngine.ballsSimulated%6)+1}`;
+            } else {
+                document.getElementById('batting-tactics').style.display = 'none';
+                document.getElementById('bowling-tactics').style.display = 'block';
+                document.getElementById('tactics-title').innerText = `Field Control: Ball ${Math.floor(simEngine.ballsSimulated/6)}.${(simEngine.ballsSimulated%6)+1}`;
+            }
+        }
+
+        function buildLiveScorecardView() {
+            let batView = document.getElementById('batting-scorecard');
+            batView.innerHTML = `<h4>Total Score: ${simEngine.runs}/${simEngine.wickets} (${Math.floor(simEngine.ballsSimulated/6)}.${simEngine.ballsSimulated%6} Overs)</h4>`;
+            
+            game.playingXI.forEach((p, idx) => {
+                let statusString = idx === simEngine.currentBatsmanIdx ? "🏏 Striking" : idx < simEngine.currentBatsmanIdx ? "Out" : "Awaiting Crease";
+                batView.innerHTML += `<div class="player-line"><span>${idx+1}. ${p.name} (${p.role})</span><b>${simEngine.batsmanRunsTracker[idx]} runs [${statusString}]</b></div>`;
             });
 
-            let opponentTotalScore = Math.floor(Math.random() * 41) + 120; // Simulated target range base
-            bowlScore.innerHTML = `<div style="text-align:center; padding:2rem; font-size:1.1rem; color:#475569;">${opponentName} sets a target calculation boundary line of <b>${opponentTotalScore} runs</b>.</div>`;
-
-            // Active Sim Ball Progression Loop
-            let balls = 0;
-            let playerIndividualRuns = 0;
-
-            let matchLoop = setInterval(() => {
-                balls++;
-                let rand = Math.random() * 100;
-                let currentBatsmanSkill = game.roster[currentBatsmanIdx] ? game.roster[currentBatsmanIdx].batting : 30;
-
-                // Probability curves matching low attributes range values 30-50
-                if (rand < (22 - (currentBatsmanSkill * 0.15))) {
-                    // Out trigger
-                    commBox.innerHTML += `Ball ${balls}: <b>WICKET!</b> ${game.roster[currentBatsmanIdx].name} falls!<br>`;
-                    document.getElementById(`p-score-${currentBatsmanIdx}`).innerHTML = `<b>${playerIndividualRuns} runs</b> (Out)`;
-                    
-                    currentBatsmanIdx++;
-                    playerIndividualRuns = 0;
-                } else {
-                    let runRand = Math.random() * 100;
-                    let ballRuns = 0;
-                    if(runRand > 88) ballRuns = 6;
-                    else if(runRand > 72) ballRuns = 4;
-                    else if(runRand > 35) ballRuns = 1;
-
-                    userRuns += ballRuns;
-                    playerIndividualRuns += ballRuns;
-
-                    if(game.roster[currentBatsmanIdx]) {
-                        document.getElementById(`p-score-${currentBatsmanIdx}`).innerText = `${playerIndividualRuns}*`;
-                    }
-                }
-
-                commBox.scrollTop = commBox.scrollHeight;
-
-                if(balls >= 60 || currentBatsmanIdx >= 11 || userRuns > opponentTotalScore) {
-                    clearInterval(matchLoop);
-                    
-                    // Finalize results calculation array bounds
-                    commBox.innerHTML += `<br><b>Innings over! ${game.userTeam} finish on ${userRuns} runs.</b><br>`;
-                    
-                    let userWon = userRuns > opponentTotalScore;
-                    if(userWon) {
-                        commBox.innerHTML += `<span style="color:var(--accent)"><b>MATCH WON! Your franchise wins.</b></span>`;
-                        game.standings[game.userTeam].won++;
-                        game.standings[game.userTeam].points += 2;
-                        game.cash += 50000;
-                    } else {
-                        commBox.innerHTML += `<span style="color:#ef4444"><b>MATCH LOST! Opponent outpaced your lineup.</b></span>`;
-                        game.standings[game.userTeam].lost++;
-                    }
-                    game.standings[game.userTeam].played++;
-
-                    // Simulate all background matches simultaneously
-                    currentRoundData.matches.forEach(m => {
-                        if(!m.userInvolved) {
-                            let winHome = Math.random() > 0.5;
-                            let winner = winHome ? m.home : m.away;
-                            let loser = winHome ? m.away : m.home;
-                            game.standings[winner].won++;
-                            game.standings[winner].played++;
-                            game.standings[winner].points += 2;
-                            game.standings[loser].lost++;
-                            game.standings[loser].played++;
-                        }
-                        m.simulated = true;
-                    });
-
-                    game.currentRound++;
-                    document.getElementById('sim-match-btn').disabled = false;
-                    renderAll();
-                }
-            }, 60);
+            let bowlView = document.getElementById('bowling-scorecard');
+            if(simEngine.currentInnings === 1) {
+                bowlView.innerHTML = `<div style="padding:1rem; text-align:center;">Opponent AI analyzing data models.<br>Target calculations establish in the second innings block.</div>`;
+            } else {
+                let bowlingAsset = game.playingXI[game.primaryBowlerIdx];
+                bowlView.innerHTML = `<h4>Target to Defend: ${simEngine.oppTarget}</h4>
+                <div class="big-score" style="font-size:1.5rem; text-align:left; margin:0;">${simEngine.opponentName}: ${simEngine.oppRuns}/${simEngine.oppWickets}</div>
+                <p style="font-size:0.85rem; margin:0.5rem 0 0 0;">Active Assigned Bowler: <b>${bowlingAsset.name}</b> (Bowl Skill: ${bowlingAsset.bowling})</p>`;
+            }
         }
 
-        // --- PROMOTION END OF SEASON ENGINE ---
-        function processSeasonEnd() {
-            const sorted = Object.keys(game.standings).sort((a,b) => game.standings[b].points - game.standings[a].points);
-            let champion = sorted;
+        function simulateNextBall() {
+            let comm = document.getElementById('commentary-box');
+            simEngine.ballsSimulated++;
 
-            if(champion === game.userTeam) {
-                if(game.currentDivision > 1) {
-                    game.currentDivision--;
-                    alert(`🎉 CONGRATULATIONS! ${game.userTeam} won the division championship! Promoted to Higher Division ${game.currentDivision}!`);
-                    game.cash += 150000;
+            let overStr = `${Math.floor((simEngine.ballsSimulated-1)/6)}.${((simEngine.ballsSimulated-1)%6)+1}`;
+
+            if (simEngine.currentInnings === 1) {
+                let selectedAggression = document.querySelector('input[name="bat-agg"]:checked').value;
+                let activeBatsman = game.playingXI[simEngine.currentBatsmanIdx];
+                let batSkill = activeBatsman ? activeBatsman.batting : 30;
+
+                let outChance = 8; 
+                let boundaryBonus = 0;
+
+                if (selectedAggression === 'defensive') { outChance -= 5; boundaryBonus -= 20; }
+                if (selectedAggression === 'aggressive') { outChance += 12; boundaryBonus += 25; }
+
+                let roll = Math.random() * 100;
+
+                if (roll < outChance) {
+                    comm.innerHTML += `Over ${overStr}: <b>WICKET!</b> (${selectedAggression.toUpperCase()}) ${activeBatsman.name} misjudges length and gets caught out!<br>`;
+                    simEngine.wickets++;
+                    simEngine.currentBatsmanIdx++;
                 } else {
-                    alert("🏆 You have conquered Division 1 and won the World Premier Super Cup Championship Grid!");
+                    let scoreRoll = Math.random() * 100 + (batSkill * 0.2) + boundaryBonus;
+                    let runsScored = 0;
+                    if(scoreRoll > 95) runsScored = 6;
+                    else if(scoreRoll > 75) runsScored = 4;
+                    else if(scoreRoll > 35) runsScored = 1;
+
+                    simEngine.runs += runsScored;
+                    simEngine.batsmanRunsTracker[simEngine.currentBatsmanIdx] += runsScored;
+                    
+                    if(runsScored > 0) {
+                        comm.innerHTML += `Over ${overStr}: ${runsScored} Run(s) scored via a clean corridor drive.<br>`;
+                    } else {
+                        comm.innerHTML += `Over ${overStr}: No run. Ball left cleanly through to the keeper.<br>`;
+                    }
                 }
+
+                buildLiveScorecardView();
+
+                // Innings Break Trigger (Shortened to 2 overs for tactical game pacing validation)
+                if (simEngine.ballsSimulated >= 12 || simEngine.wickets >= 10) {
+                    simEngine.oppTarget = simEngine.runs + 1;
+                    simEngine.currentInnings = 2;
+                    simEngine.ballsSimulated = 0;
+                    comm.innerHTML += `<br><b>--- INNINGS BREAK ---</b><br>Your franchise scored ${simEngine.runs} runs. Opponent needs <b>${simEngine.oppTarget}</b> to secure victory.<br><br>`;
+                }
+
             } else {
-                alert(`Season End: ${champion} wins the division championship map. Your team finished in rank positions. Try again in this division tier!`);
+                let selectedField = document.querySelector('input[name="bowl-field"]:checked').value;
+                let activeBowler = game.playingXI[game.primaryBowlerIdx];
+                let bowlSkill = activeBowler ? activeBowler.bowling : 30;
+
+                let wicketChance = 8 + (bowlSkill * 0.1);
+                let runSuppressionModifier = 0;
+
+                if (selectedField === 'defensive') { wicketChance -= 4; runSuppressionModifier -= 15; }
+                if (selectedField === 'attacking') { wicketChance += 8; runSuppressionModifier += 20; }
+
+                let roll = Math.random() * 100;
+
+                if (roll < wicketChance) {
+                    simEngine.oppWickets++;
+                    comm.innerHTML += `Over ${overStr}: <b>WICKET!</b> Your field array traps the AI batsman. Outstanding delivery structure.<br>`;
+                } else {
+                    let aiScoreRoll = Math.random() * 100 + runSuppressionModifier;
+                    let aiRuns = 0;
+                    if(aiScoreRoll > 90) aiRuns = 6;
+                    else if(aiScoreRoll > 70) aiRuns = 4;
+                    else if(aiScoreRoll > 40) aiRuns = 1;
+
+                    simEngine.oppRuns += aiRuns;
+                    comm.innerHTML += `Over ${overStr}: AI batsman hits it into the gap for ${aiRuns} run(s).<br>`;
+                }
+
+                buildLiveScorecardView();
+
+                if (simEngine.oppRuns >= simEngine.oppTarget) {
+                    comm.innerHTML += `<br><span style="color:var(--danger)"><b>MATCH LOST!</b> Opponent successfully chased down the target parameters.</span>`;
+                    game.standings[game.userTeam].lost++;
+                    concludeActiveMatchSystem();
+                } else if (simEngine.ballsSimulated >= 12 || simEngine.oppWickets >= 10) {
+                    comm.innerHTML += `<br><span style="color:var(--accent)"><b>MATCH WON!</b> Target defended. Points allocated to franchise table.</span>`;
+                    game.standings[game.userTeam].won++;
+                    game.standings[game.userTeam].points += 2;
+                    game.cash += 40000;
+                    concludeActiveMatchSystem();
+                }
             }
 
-            // Soft resetting sequence loops for next division
-            game.currentRound = 1;
-            generateDivisionInfrastructure();
-            buildRoundRobinSchedule();
+            comm.scrollTop = comm.scrollHeight;
+            toggleTacticsUIPanels();
+        }
+
+        function concludeActiveMatchSystem() {
+            simEngine.active = false;
+            document.getElementById('sim-match-btn').style.display = 'inline-block';
+            document.getElementById('tactics-panel').style.display = 'none';
+
+            let currentRoundData = game.schedule[game.currentRound - 1];
+            currentRoundData.matches.forEach(m => {
+                if(!m.userInvolved) {
+                    let winHome = Math.random() > 0.5;
+                    let winner = winHome ? m.home : m.away;
+                    let loser = winHome ? m.away : m.home;
+                    game.standings[winner].won++;
+                    game.standings[winner].played++;
+                    game.standings[winner].points += 2;
+                    game.standings[loser].lost++;
+                    game.standings[loser].played++;
+                }
+                m.simulated = true;
+            });
+
+            game.standings[game.userTeam].played++;
+            game.currentRound++;
             renderAll();
-            switchTab('standings');
         }
     </script>
 </body>
 </html>
+                       
+                                                    
+                                                            
